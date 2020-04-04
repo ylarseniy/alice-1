@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 
 # Импортируем модули для работы с JSON и логами.
+import os
 import json
 import logging
 
@@ -18,7 +19,7 @@ sessionStorage = {}
 
 
 # Задаем параметры приложения Flask.
-@app.route("/", methods=['POST'])
+@app.route("/post", methods=['POST'])
 def main():
     # Функция получает тело запроса и возвращает ответ.
     logging.info('Request: %r', request.json)
@@ -104,3 +105,8 @@ def get_suggests(user_id):
         })
 
     return suggests
+
+
+if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host='localhost', port=port)
