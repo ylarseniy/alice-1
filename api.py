@@ -61,7 +61,7 @@ def handle_dialog(req, res):
             ]
         }
 
-        res['response']['text'] = f'Привет! Купи {"слона" if first else "кролика"}!'
+        res['response']['text'] = 'Привет! Купи слона!'
         res['response']['buttons'] = get_suggests(user_id)
         return
 
@@ -75,15 +75,12 @@ def handle_dialog(req, res):
         'я куплю'
     ]:
         # Пользователь согласился, прощаемся.
-        res['response']['text'] = f'{"Слона" if first else "Кролика"} можно найти на Яндекс.Маркете!'
         first = False
-        sessionStorage[user_id] = {
-            'suggests': [
+        sessionStorage[user_id]['suggests'] = [
                 "Не хочу.",
                 "Не буду.",
                 "Отстань!",
             ]
-        }
 
         res['response']['text'] = 'А теперь купи кролика!'
         res['response']['buttons'] = get_suggests(user_id)
