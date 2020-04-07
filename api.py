@@ -20,10 +20,6 @@ cities = {
               '965417/92767891fbc01f798de4']
 }
 
-game_over = False
-game_started = False
-right_city = ''
-
 # создаем словарь, где для каждого пользователя
 # мы будем хранить его имя
 sessionStorage = {}
@@ -45,7 +41,6 @@ def main():
 
 
 def handle_dialog(res, req):
-    global game_over, game_started, right_city
     user_id = req['session']['user_id']
 
     # если пользователь новый, то просим его представиться.
@@ -53,7 +48,10 @@ def handle_dialog(res, req):
         res['response']['text'] = 'Привет! Назови свое имя!'
         # создаем словарь в который в будущем положим имя пользователя
         sessionStorage[user_id] = {
-            'first_name': None
+            'first_name': None,
+            'game_over': False,
+            'game_started': False,
+            'right_city': None
         }
         return
 
@@ -77,8 +75,8 @@ def handle_dialog(res, req):
                           + '. Я - Алиса. Отгадаешь город по фото?'
 
     else:
-        if not game_over:
-            if not game_started:
+        if not sessionStorage[user_id]['game_over']:
+            if not sessionStorage[user_id]['game_started']:
                 if req['request']['original_utterance'].lower() in [
                     'да',
                     'отгадаю',
@@ -87,13 +85,13 @@ def handle_dialog(res, req):
                     'конечно',
                     'угу',
                 ]:
-                    right_city = random.choice([*cities])
+                    sessionStorage[user_id]['right_city'] = random.choice([*cities])
                     res['response']['card'] = {}
                     res['response']['card']['type'] = 'BigImage'
                     res['response']['card']['title'] = ''
-                    res['response']['card']['image_id'] = random.choice(cities[right_city])
+                    res['response']['card']['image_id'] = random.choice(cities[sessionStorage[user_id]['right_city']])
                     res['response']['text'] = 'Что это за город?'
-                    game_started = True
+                    sessionStorage[user_id]['game_started'] = True
                 elif req['request']['original_utterance'].lower() in [
                     'нет',
                     'не',
@@ -101,8 +99,8 @@ def handle_dialog(res, req):
                     'не буду',
                     'не отгадаю',
                 ]:
-                    game_over = True
-                    game_started = False
+                    sessionStorage[user_id]['game_over'] = True
+                    sessionStorage[user_id]['game_started'] = False
                 else:
                     res['response']['text'] = 'Не расслышала ответ. Попробуй еще разок!'
             else:
@@ -112,7 +110,7 @@ def handle_dialog(res, req):
                 # то показываем его (выбираем одну из двух картинок случайно)
                 if city in cities:
                     res['response']['text'] = 'Угадал!'
-                    game_started = False
+                    sessionStorage[user_id]['game_started'] = False
                 # если не нашел, то отвечает пользователю
                 # 'Первый раз слышу об этом городе.'
                 else:
