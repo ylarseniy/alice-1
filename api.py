@@ -43,6 +43,7 @@ def main():
 def handle_dialog(res, req):
     user_id = req['session']['user_id']
 
+    print(f'SESSION STORAGE START DIALOG: {sessionStorage}')
     # если пользователь новый, то просим его представиться.
     if req['session']['new']:
         res['response']['text'] = 'Привет! Назови свое имя!'
@@ -74,6 +75,7 @@ def handle_dialog(res, req):
                 'text'] = 'Приятно познакомиться, ' \
                           + first_name.title() \
                           + '. Я - Алиса. Отгадаешь город по фото?'
+        print(f'SESSION STORAGE CHANGED: {sessionStorage}')
 
     else:
         if not sessionStorage[user_id]['game_over']:
