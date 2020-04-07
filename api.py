@@ -2,7 +2,6 @@ from flask import Flask, request
 import logging
 import json
 import random
-import os
 
 app = Flask(__name__)
 
@@ -24,7 +23,6 @@ cities = {
 # создаем словарь, где для каждого пользователя
 # мы будем хранить его имя
 sessionStorage = {}
-print('GLOBAL INIT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
 
 
 @app.route('/post', methods=['POST'])
@@ -141,5 +139,4 @@ def get_first_name(req):
 
 
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host='localhost', port=port)
+    app.run()
