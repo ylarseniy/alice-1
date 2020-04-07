@@ -54,6 +54,7 @@ def handle_dialog(res, req):
             'game_started': False,
             'right_city': None
         }
+        print('NEW SESSION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
         return
 
     # если пользователь не новый, то попадаем сюда.
