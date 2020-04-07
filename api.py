@@ -74,7 +74,9 @@ def handle_dialog(req, res):
         'я покупаю',
         'я куплю'
     ]:
-        # Пользователь согласился, прощаемся.
+        if not first:
+            res['response']['text'] = 'Кролика можно найти на Яндекс.Маркете!'
+            return
         first = False
         sessionStorage[user_id]['suggests'] = [
                 "Не хочу.",
