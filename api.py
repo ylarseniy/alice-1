@@ -137,7 +137,3 @@ def get_first_name(req):
             # то возвращаем ее значение.
             # Во всех остальных случаях возвращаем None.
             return entity['value'].get('first_name', None)
-
-
-if __name__ == '__main__':
-    app.run()
