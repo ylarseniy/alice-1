@@ -59,6 +59,7 @@ def handle_dialog(res, req):
     # если поле имени пустое, то это говорит о том,
     # что пользователь еще не представился.
     if sessionStorage[user_id]['first_name'] is None:
+        print(f'SESSION STORAGE: {sessionStorage}')
         # в последнем его сообщение ищем имя.
         first_name = get_first_name(req)
         # если не нашли, то сообщаем пользователю что не расслышали.
