@@ -87,7 +87,7 @@ def handle_dialog(res, req):
                     'конечно',
                     'угу',
                 ]:
-                    right_city = random.choice(cities)
+                    right_city = random.choice([*cities])
                     res['response']['card'] = {}
                     res['response']['card']['type'] = 'BigImage'
                     res['response']['card']['title'] = ''
