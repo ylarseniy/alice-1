@@ -16,6 +16,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 # Хранилище данных о сессиях.
 sessionStorage = {}
+first = True
 
 
 # Задаем параметры приложения Flask.
@@ -45,6 +46,7 @@ def main():
 
 # Функция для непосредственной обработки диалога.
 def handle_dialog(req, res):
+    global first
     user_id = req['session']['user_id']
 
     if req['session']['new']:
@@ -59,7 +61,7 @@ def handle_dialog(req, res):
             ]
         }
 
-        res['response']['text'] = 'Привет! Купи слона!'
+        res['response']['text'] = f'Привет! Купи {"слона" if first else "кролика"}!'
         res['response']['buttons'] = get_suggests(user_id)
         return
 
@@ -69,14 +71,27 @@ def handle_dialog(req, res):
         'куплю',
         'покупаю',
         'хорошо',
+        'я покупаю',
+        'я куплю'
     ]:
         # Пользователь согласился, прощаемся.
-        res['response']['text'] = 'Слона можно найти на Яндекс.Маркете!'
+        res['response']['text'] = f'{"Слона" if first else "Кролика"} можно найти на Яндекс.Маркете!'
+        first = False
+        sessionStorage[user_id] = {
+            'suggests': [
+                "Не хочу.",
+                "Не буду.",
+                "Отстань!",
+            ]
+        }
+
+        res['response']['text'] = 'А теперь купи кролика!'
+        res['response']['buttons'] = get_suggests(user_id)
         return
 
     # Если нет, то убеждаем его купить слона!
-    res['response']['text'] = 'Все говорят "%s", а ты купи слона!' % (
-        req['request']['original_utterance']
+    res['response']['text'] = 'Все говорят "%s", а ты купи %s!' % (
+        req['request']['original_utterance'], 'слона' if first else 'кролика'
     )
     res['response']['buttons'] = get_suggests(user_id)
 
@@ -100,7 +115,7 @@ def get_suggests(user_id):
     if len(suggests) < 2:
         suggests.append({
             "title": "Ладно",
-            "url": "https://market.yandex.ru/search?text=слон",
+            "url": f"https://market.yandex.ru/search?text={'слон' if first else 'кролик'}",
             "hide": True
         })
 
