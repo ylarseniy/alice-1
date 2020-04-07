@@ -23,6 +23,7 @@ cities = {
 # создаем словарь, где для каждого пользователя
 # мы будем хранить его имя
 sessionStorage = {}
+print('GLOBAL INIT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
 
 
 @app.route('/post', methods=['POST'])
@@ -42,8 +43,6 @@ def main():
 
 def handle_dialog(res, req):
     user_id = req['session']['user_id']
-
-    print(f'SESSION STORAGE START DIALOG: {sessionStorage}')
     # если пользователь новый, то просим его представиться.
     if req['session']['new']:
         res['response']['text'] = 'Привет! Назови свое имя!'
@@ -54,14 +53,12 @@ def handle_dialog(res, req):
             'game_started': False,
             'right_city': None
         }
-        print('NEW SESSION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
         return
 
     # если пользователь не новый, то попадаем сюда.
     # если поле имени пустое, то это говорит о том,
     # что пользователь еще не представился.
     if sessionStorage[user_id]['first_name'] is None:
-        print(f'SESSION STORAGE: {sessionStorage}')
         # в последнем его сообщение ищем имя.
         first_name = get_first_name(req)
         # если не нашли, то сообщаем пользователю что не расслышали.
@@ -76,7 +73,6 @@ def handle_dialog(res, req):
                 'text'] = 'Приятно познакомиться, ' \
                           + first_name.title() \
                           + '. Я - Алиса. Отгадаешь город по фото?'
-        print(f'SESSION STORAGE CHANGED: {sessionStorage}')
 
     else:
         if not sessionStorage[user_id]['game_over']:
@@ -113,7 +109,7 @@ def handle_dialog(res, req):
                 # если этот город среди известных нам,
                 # то показываем его (выбираем одну из двух картинок случайно)
                 if city in cities:
-                    res['response']['text'] = 'Угадал!'
+                    res['response']['text'] = 'Угадал! Хочешь отгадывать дальше?'
                     sessionStorage[user_id]['game_started'] = False
                 # если не нашел, то отвечает пользователю
                 # 'Первый раз слышу об этом городе.'
