@@ -90,13 +90,13 @@ def handle_dialog(res, req):
                     right_city = random.choice([*sessionStorage[user_id]["cities"]])
                     image_id = random.choice(sessionStorage[user_id]["cities"][right_city])
                     sessionStorage[user_id]['right_city'] = right_city
-                    res['response']['card']['image_id'] = image_id
                     sessionStorage[user_id]["cities"][right_city].remove(image_id)
                     if not sessionStorage[user_id]["cities"][right_city]:
                         sessionStorage[user_id]["cities"].pop(right_city)
                     res['response']['card'] = {}
                     res['response']['card']['type'] = 'BigImage'
                     res['response']['card']['title'] = ''
+                    res['response']['card']['image_id'] = image_id
                     res['response']['text'] = 'Что это за город?'
                     sessionStorage[user_id]['game_started'] = True
                 elif req['request']['original_utterance'].lower() in [
