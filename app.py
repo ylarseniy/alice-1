@@ -100,6 +100,7 @@ def handle_dialog(res, req):
                 ]:
                     sessionStorage[user_id]['game_over'] = True
                     sessionStorage[user_id]['game_started'] = False
+                    res['response']['text'] = 'Ну и ладно'
                 else:
                     res['response']['text'] = 'Не расслышала ответ. Попробуй еще разок!'
             else:
