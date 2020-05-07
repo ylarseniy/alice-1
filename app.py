@@ -2,6 +2,7 @@ from flask import Flask, request
 import logging
 import json
 import random
+from copy import deepcopy
 
 app = Flask(__name__)
 
@@ -50,7 +51,9 @@ def handle_dialog(res, req):
             'first_name': None,
             'game_over': False,
             'game_started': False,
-            'right_city': None
+            'right_city': None,
+            'guessed': [],
+            'cities': deepcopy(cities)
         }
         return
 
@@ -84,11 +87,16 @@ def handle_dialog(res, req):
                     'конечно',
                     'угу',
                 ]:
-                    sessionStorage[user_id]['right_city'] = random.choice([*cities])
+                    right_city = random.choice([sessionStorage[user_id]["cities"]])
+                    image_id = random.choice(cities[sessionStorage[user_id]['right_city']])
+                    sessionStorage[user_id]['right_city'] = right_city
+                    res['response']['card']['image_id'] = image_id
+                    sessionStorage[user_id]["cities"][right_city].remove(image_id)
+                    if not sessionStorage[user_id]["cities"][right_city]:
+                        sessionStorage[user_id]["cities"].pop(right_city)
                     res['response']['card'] = {}
                     res['response']['card']['type'] = 'BigImage'
                     res['response']['card']['title'] = ''
-                    res['response']['card']['image_id'] = random.choice(cities[sessionStorage[user_id]['right_city']])
                     res['response']['text'] = 'Что это за город?'
                     sessionStorage[user_id]['game_started'] = True
                 elif req['request']['original_utterance'].lower() in [
@@ -104,15 +112,14 @@ def handle_dialog(res, req):
                 else:
                     res['response']['text'] = 'Не расслышала ответ. Попробуй еще разок!'
             else:
-                # ищем город в сообщение от пользователя
                 city = get_city(req)
-                # если этот город среди известных нам,
-                # то показываем его (выбираем одну из двух картинок случайно)
-                if city in cities:
-                    res['response']['text'] = 'Угадал! Хочешь отгадывать дальше?'
+                if city == sessionStorage[user_id]['right_city']:
+                    if not sessionStorage[user_id]['cities']:
+                        res['response']['text'] = 'Угадал! Города с моём списке закончились!'
+                        sessionStorage[user_id]['game_over'] = True
+                    else:
+                        res['response']['text'] = 'Угадал! Хочешь отгадывать дальше?'
                     sessionStorage[user_id]['game_started'] = False
-                # если не нашел, то отвечает пользователю
-                # 'Первый раз слышу об этом городе.'
                 else:
                     res['response']['text'] = \
                         'Не угадал. Попробуй еще разок!'
