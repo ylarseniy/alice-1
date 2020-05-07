@@ -87,8 +87,8 @@ def handle_dialog(res, req):
                     'конечно',
                     'угу',
                 ]:
-                    right_city = random.choice([sessionStorage[user_id]["cities"]])
-                    image_id = random.choice(cities[sessionStorage[user_id]['right_city']])
+                    right_city = random.choice([*sessionStorage[user_id]["cities"]])
+                    image_id = random.choice(sessionStorage[user_id]["cities"][right_city])
                     sessionStorage[user_id]['right_city'] = right_city
                     res['response']['card']['image_id'] = image_id
                     sessionStorage[user_id]["cities"][right_city].remove(image_id)
