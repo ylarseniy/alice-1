@@ -77,52 +77,54 @@ def handle_dialog(res, req):
                           + '. Я - Алиса. Отгадаешь город по фото?'
 
     else:
-        if not sessionStorage[user_id]['game_over']:
-            if not sessionStorage[user_id]['game_started']:
-                if req['request']['original_utterance'].lower() in [
-                    'да',
-                    'отгадаю',
-                    'ага',
-                    'го',
-                    'конечно',
-                    'угу',
-                ]:
-                    right_city = random.choice([*sessionStorage[user_id]["cities"]])
-                    image_id = random.choice(sessionStorage[user_id]["cities"][right_city])
-                    sessionStorage[user_id]['right_city'] = right_city
-                    sessionStorage[user_id]["cities"][right_city].remove(image_id)
-                    if not sessionStorage[user_id]["cities"][right_city]:
-                        sessionStorage[user_id]["cities"].pop(right_city)
-                    res['response']['card'] = {}
-                    res['response']['card']['type'] = 'BigImage'
-                    res['response']['card']['title'] = ''
-                    res['response']['card']['image_id'] = image_id
-                    res['response']['text'] = 'Что это за город?'
-                    sessionStorage[user_id]['game_started'] = True
-                elif req['request']['original_utterance'].lower() in [
-                    'нет',
-                    'не',
-                    'неа',
-                    'не буду',
-                    'не отгадаю',
-                ]:
-                    sessionStorage[user_id]['game_over'] = True
-                    sessionStorage[user_id]['game_started'] = False
-                    res['response']['text'] = 'Ну и ладно'
-                else:
-                    res['response']['text'] = 'Не расслышала ответ. Попробуй еще разок!'
+        if sessionStorage[user_id]['game_over']:
+            res['response']['text'] = "Игра окончена!"
+            return
+        if not sessionStorage[user_id]['game_started']:
+            if req['request']['original_utterance'].lower() in [
+                'да',
+                'отгадаю',
+                'ага',
+                'го',
+                'конечно',
+                'угу',
+            ]:
+                right_city = random.choice([*sessionStorage[user_id]["cities"]])
+                image_id = random.choice(sessionStorage[user_id]["cities"][right_city])
+                sessionStorage[user_id]['right_city'] = right_city
+                sessionStorage[user_id]["cities"][right_city].remove(image_id)
+                if not sessionStorage[user_id]["cities"][right_city]:
+                    sessionStorage[user_id]["cities"].pop(right_city)
+                res['response']['card'] = {}
+                res['response']['card']['type'] = 'BigImage'
+                res['response']['card']['title'] = ''
+                res['response']['card']['image_id'] = image_id
+                res['response']['text'] = 'Что это за город?'
+                sessionStorage[user_id]['game_started'] = True
+            elif req['request']['original_utterance'].lower() in [
+                'нет',
+                'не',
+                'неа',
+                'не буду',
+                'не отгадаю',
+            ]:
+                sessionStorage[user_id]['game_over'] = True
+                sessionStorage[user_id]['game_started'] = False
+                res['response']['text'] = 'Ну и ладно'
             else:
-                city = get_city(req)
-                if city == sessionStorage[user_id]['right_city']:
-                    if not sessionStorage[user_id]['cities']:
-                        res['response']['text'] = 'Угадал! Города с моём списке закончились!'
-                        sessionStorage[user_id]['game_over'] = True
-                    else:
-                        res['response']['text'] = 'Угадал! Хочешь отгадывать дальше?'
-                    sessionStorage[user_id]['game_started'] = False
+                res['response']['text'] = 'Не расслышала ответ. Попробуй еще разок!'
+        else:
+            city = get_city(req)
+            if city == sessionStorage[user_id]['right_city']:
+                if not sessionStorage[user_id]['cities']:
+                    res['response']['text'] = 'Угадал! Города с моём списке закончились!'
+                    sessionStorage[user_id]['game_over'] = True
                 else:
-                    res['response']['text'] = \
-                        'Не угадал. Попробуй еще разок!'
+                    res['response']['text'] = 'Угадал! Хочешь отгадывать дальше?'
+                sessionStorage[user_id]['game_started'] = False
+            else:
+                res['response']['text'] = \
+                    'Не угадал. Попробуй еще разок!'
 
 
 def get_city(req):
