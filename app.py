@@ -1,30 +1,16 @@
 from flask import Flask, request
 import logging
 import json
-import random
-from copy import deepcopy
-
-from geo import get_geo_info
+import re
+import requests
 
 app = Flask(__name__)
 
 logging.basicConfig(level=logging.INFO)
 
-# создаем словарь, в котором ключ — название города,
-# а значение — массив, где перечислены id картинок,
-# которые мы записали в прошлом пункте.
 
-cities = {
-    'москва': ['1030494/5a0caa7d6a1cae4efd5b',
-               '1540737/9f695e569779055c1229'],
-    'нью-йорк': ['1533899/e216c3fb2e6b0458e87f',
-                 '1533899/143f08ed28549c84df0f'],
-    'париж': ['1030494/0ffc36c53e49db9e2d70',
-              '965417/92767891fbc01f798de4']
-}
+YA_TRANSLATE_API_KEY = "trnsl.1.1.20200412T174232Z.82b140a82ba53672.c1410c1fe31826712984fbd80ebca505df79f428"
 
-# создаем словарь, где для каждого пользователя
-# мы будем хранить его имя
 sessionStorage = {}
 
 
@@ -47,163 +33,28 @@ def handle_dialog(res, req):
     user_id = req['session']['user_id']
     # если пользователь новый, то просим его представиться.
     if req['session']['new']:
-        res['response']['text'] = 'Привет! Назови свое имя!'
-        res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
+        res['response']['text'] = 'Привет! Я могу переводить русские слова в английские!'
         # создаем словарь в который в будущем положим имя пользователя
-        sessionStorage[user_id] = {
-            'first_name': None,
-            'game_over': False,
-            'game_started': False,
-            'right_city': None,
-            'cities': deepcopy(cities),
-            'country': None
-        }
+        sessionStorage[user_id] = {}
         return
 
-    if req['request']['original_utterance'].lower() == "помощь":
-        res['response']['text'] = 'Какая справка для этой игры? Тут всё очевидно'
-        res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
-        return
-    if req['request']['original_utterance'].lower() == "покажи город на карте":
-        res['response']['text'] = 'Показываю!'
-        res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
-        return
-    # если пользователь не новый, то попадаем сюда.
-    # если поле имени пустое, то это говорит о том,
-    # что пользователь еще не представился.
-    if sessionStorage[user_id]['first_name'] is None:
-        # в последнем его сообщение ищем имя.
-        first_name = get_first_name(req)
-        # если не нашли, то сообщаем пользователю что не расслышали.
-        if first_name is None:
-            res['response']['text'] = \
-                'Не расслышала имя. Повтори, пожалуйста!'
-            res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
-        # если нашли, то приветствуем пользователя.
-        # И спрашиваем какой город он хочет увидеть.
+    if re.match(r"переведи(те)? слово:? *", req['request']['original_utterance'].lower()):
+        word = re.sub(r"переведи(те)? слово:? *", "", req['request']['original_utterance'].lower())
+        if not word:
+            res['response']['text'] = 'Не указано слово, которое нужно перевести!'
         else:
-            sessionStorage[user_id]['first_name'] = first_name
-            res['response'][
-                'text'] = 'Приятно познакомиться, ' \
-                          + first_name.title() \
-                          + '. Я - Алиса. Отгадаешь город по фото?'
-            res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
+            TRANSLATE_SERVER = "https://translate.yandex.net/api/v1.5/tr.json/translate"
+            translate_options = {"key": YA_TRANSLATE_API_KEY,
+                                 "text": req['request']['original_utterance'].lower(),
+                                 "lang": "ru-en"}
+            try:
+                result = requests.get(TRANSLATE_SERVER, params=translate_options).json()
+            except BaseException as e:
+                res['response']['text'] = f"Не удалось перевести по причине: {e}"
+                return
+            res['response']['text'] = result["text"][0]
     else:
-        if sessionStorage[user_id]['game_over']:
-            res['response']['text'] = "Игра окончена!"
-            res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
-            return
-        if not sessionStorage[user_id]['game_started']:
-            if sessionStorage[user_id]['country']:
-                if req['request']['original_utterance'].lower() == sessionStorage[user_id]['country']:
-                    if not sessionStorage[user_id]['cities']:
-                        res['response']['text'] = f'Угадал, {sessionStorage[user_id]["first_name"].capitalize()}' \
-                                                  f'! Города с моём списке закончились!'
-                        res['response']['buttons'] = [
-                            {"title": "Помощь",
-                             "hide": True},
-                            {"title": "Покажи город на карте",
-                             "url": f"https://yandex.ru/maps/?mode=search&text={sessionStorage[user_id]['right_city']}",
-                             "hide": True}]
-                        sessionStorage[user_id]['game_over'] = True
-                    else:
-                        sessionStorage[user_id]['game_started'] = False
-                        res['response']['text'] = f'Правильно, {sessionStorage[user_id]["first_name"].capitalize()}!' \
-                                                  f' Сыграем ещё?'
-                        res['response']['buttons'] = [
-                            {"title": "Помощь",
-                             "hide": True},
-                            {"title": "Покажи город на карте",
-                             "url": f"https://yandex.ru/maps/?mode=search&text={sessionStorage[user_id]['right_city']}",
-                             "hide": True}]
-
-                    sessionStorage[user_id]['game_started'] = False
-                    sessionStorage[user_id]['country'] = None
-                    return
-                else:
-                    res['response']['text'] = f'Не угадал, {sessionStorage[user_id]["first_name"].capitalize()}.' \
-                                              f' Попробуй еще разок!'
-                    res['response']['buttons'] = [
-                        {"title": "Помощь",
-                         "hide": True},
-                        {"title": "Покажи город на карте",
-                         "url": f"https://yandex.ru/maps/?mode=search&text={sessionStorage[user_id]['right_city']}",
-                         "hide": True}]
-                    return
-            if req['request']['original_utterance'].lower() in [
-                'да',
-                'отгадаю',
-                'ага',
-                'го',
-                'конечно',
-                'угу',
-            ]:
-                right_city = random.choice([*sessionStorage[user_id]["cities"]])
-                image_id = random.choice(sessionStorage[user_id]["cities"][right_city])
-                sessionStorage[user_id]['right_city'] = right_city
-                sessionStorage[user_id]["cities"][right_city].remove(image_id)
-                if not sessionStorage[user_id]["cities"][right_city]:
-                    sessionStorage[user_id]["cities"].pop(right_city)
-                res['response']['card'] = {}
-                res['response']['card']['type'] = 'BigImage'
-                res['response']['card']['title'] = ''
-                res['response']['card']['image_id'] = image_id
-                res['response']['text'] = f'{sessionStorage[user_id]["first_name"].capitalize()}, что это за город?'
-                res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
-                sessionStorage[user_id]['game_started'] = True
-            elif req['request']['original_utterance'].lower() in [
-                'нет',
-                'не',
-                'неа',
-                'не буду',
-                'не отгадаю',
-            ]:
-                sessionStorage[user_id]['game_over'] = True
-                sessionStorage[user_id]['game_started'] = False
-                res['response']['text'] = 'Ну и ладно'
-                res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
-            else:
-                res['response']['text'] = 'Не расслышала ответ. Попробуй еще разок!'
-                res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
-        else:
-            city = get_city(req)
-            if city == sessionStorage[user_id]['right_city']:
-                res['response']['text'] = f'Правильно, {sessionStorage[user_id]["first_name"].capitalize()}!' \
-                                          f' А в какой стране этот город?'
-                sessionStorage[user_id]['country'] = get_geo_info(city, "country").lower()
-                print(sessionStorage[user_id]['country'])
-                sessionStorage[user_id]['game_started'] = False
-                res['response']['buttons'] = [
-                    {"title": "Помощь",
-                     "hide": True},
-                    {"title": "Покажи город на карте",
-                     "url": f"https://yandex.ru/maps/?mode=search&text={sessionStorage[user_id]['right_city']}",
-                     "hide": True}]
-            else:
-                res['response']['text'] = \
-                    f'Не угадал, {sessionStorage[user_id]["first_name"].capitalize()}. Попробуй еще разок!'
-                res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
-
-
-def get_city(req):
-    # перебираем именованные сущности
-    for entity in req['request']['nlu']['entities']:
-        # если тип YANDEX.GEO то пытаемся получить город(city),
-        # если нет, то возвращаем None
-        if entity['type'] == 'YANDEX.GEO':
-            # возвращаем None, если не нашли сущности с типом YANDEX.GEO
-            return entity['value'].get('city', None)
-
-
-def get_first_name(req):
-    # перебираем сущности
-    for entity in req['request']['nlu']['entities']:
-        # находим сущность с типом 'YANDEX.FIO'
-        if entity['type'] == 'YANDEX.FIO':
-            # Если есть сущность с ключом 'first_name',
-            # то возвращаем ее значение.
-            # Во всех остальных случаях возвращаем None.
-            return entity['value'].get('first_name', None)
+        res['response']['text'] = 'Не правильный формат ввода, пишите «Переведите (переведи) слово: *слово*»'
 
 
 if __name__ == '__main__':
