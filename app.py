@@ -46,7 +46,7 @@ def handle_dialog(res, req):
     # если пользователь новый, то просим его представиться.
     if req['session']['new']:
         res['response']['text'] = 'Привет! Назови свое имя!'
-        res['response']['buttons'] = [{"title": "Помощь", "hide": False}]
+        res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
         # создаем словарь в который в будущем положим имя пользователя
         sessionStorage[user_id] = {
             'first_name': None,
@@ -68,6 +68,7 @@ def handle_dialog(res, req):
         if first_name is None:
             res['response']['text'] = \
                 'Не расслышала имя. Повтори, пожалуйста!'
+            res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
         # если нашли, то приветствуем пользователя.
         # И спрашиваем какой город он хочет увидеть.
         else:
@@ -76,13 +77,17 @@ def handle_dialog(res, req):
                 'text'] = 'Приятно познакомиться, ' \
                           + first_name.title() \
                           + '. Я - Алиса. Отгадаешь город по фото?'
+            res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
 
     else:
-        if sessionStorage[user_id]['game_over']:
-            res['response']['text'] = "Игра окончена!"
-            return
+        print(req['request']['original_utterance'].lower())
         if req['request']['original_utterance'].lower() == "помощь":
             res['response']['text'] = 'Какая справка для этой игры? Тут всё очевидно'
+            res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
+            return
+        if sessionStorage[user_id]['game_over']:
+            res['response']['text'] = "Игра окончена!"
+            res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
             return
         if not sessionStorage[user_id]['game_started']:
             if req['request']['original_utterance'].lower() in [
@@ -104,6 +109,7 @@ def handle_dialog(res, req):
                 res['response']['card']['title'] = ''
                 res['response']['card']['image_id'] = image_id
                 res['response']['text'] = 'Что это за город?'
+                res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
                 sessionStorage[user_id]['game_started'] = True
             elif req['request']['original_utterance'].lower() in [
                 'нет',
@@ -115,20 +121,25 @@ def handle_dialog(res, req):
                 sessionStorage[user_id]['game_over'] = True
                 sessionStorage[user_id]['game_started'] = False
                 res['response']['text'] = 'Ну и ладно'
+                res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
             else:
                 res['response']['text'] = 'Не расслышала ответ. Попробуй еще разок!'
+                res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
         else:
             city = get_city(req)
             if city == sessionStorage[user_id]['right_city']:
                 if not sessionStorage[user_id]['cities']:
                     res['response']['text'] = 'Угадал! Города с моём списке закончились!'
+                    res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
                     sessionStorage[user_id]['game_over'] = True
                 else:
                     res['response']['text'] = 'Угадал! Хочешь отгадывать дальше?'
+                    res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
                 sessionStorage[user_id]['game_started'] = False
             else:
                 res['response']['text'] = \
                     'Не угадал. Попробуй еще разок!'
+                res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
 
 
 def get_city(req):
