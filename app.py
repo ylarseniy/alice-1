@@ -62,6 +62,7 @@ def handle_dialog(res, req):
         res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
         return
     if req['request']['original_utterance'].lower() == "покажи город на карте":
+        res['response']['text'] = 'Показываю!'
         res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
         return
     # если пользователь не новый, то попадаем сюда.
