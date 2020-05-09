@@ -46,7 +46,7 @@ def handle_dialog(res, req):
     # если пользователь новый, то просим его представиться.
     if req['session']['new']:
         res['response']['text'] = 'Привет! Назови свое имя!'
-        res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
+        res['response']['buttons'] = [{"title": "Помощь", "hide": False}]
         # создаем словарь в который в будущем положим имя пользователя
         sessionStorage[user_id] = {
             'first_name': None,
@@ -81,7 +81,7 @@ def handle_dialog(res, req):
         if sessionStorage[user_id]['game_over']:
             res['response']['text'] = "Игра окончена!"
             return
-        if req['request']['original_utterance'].lower() == "Помощь":
+        if req['request']['original_utterance'].lower() == "помощь":
             res['response']['text'] = 'Какая справка для этой игры? Тут всё очевидно'
             return
         if not sessionStorage[user_id]['game_started']:
