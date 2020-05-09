@@ -9,7 +9,7 @@ app = Flask(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-YA_TRANSLATE_API_KEY = "trnsl.1.1.20200412T174232Z.82b140a82ba53672.c1410c1fe31826712984fbd80ebca505df79f428"
+YA_TRANSLATE_API_KEY = "YOUR_API_KEY"
 
 sessionStorage = {}
 
