@@ -95,6 +95,11 @@ def handle_dialog(res, req):
             return
         if not sessionStorage[user_id]['game_started']:
             if sessionStorage[user_id]['country']:
+                print(req['request']['original_utterance'].lower(), sessionStorage[user_id]['country'])
+                print(req['request']['original_utterance'].lower(), sessionStorage[user_id]['country'])
+                print(req['request']['original_utterance'].lower(), sessionStorage[user_id]['country'])
+                print(req['request']['original_utterance'].lower(), sessionStorage[user_id]['country'])
+                print(req['request']['original_utterance'].lower(), sessionStorage[user_id]['country'])
                 if req['request']['original_utterance'].lower() == sessionStorage[user_id]['country']:
                     if not sessionStorage[user_id]['cities']:
                         res['response']['text'] = 'Угадал! Города с моём списке закончились!'
