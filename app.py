@@ -167,6 +167,7 @@ def handle_dialog(res, req):
             if city == sessionStorage[user_id]['right_city']:
                 res['response']['text'] = 'Правильно! А в какой стране этот город?'
                 sessionStorage[user_id]['country'] = get_geo_info(city, "country")
+                print(sessionStorage[user_id]['country'])
                 sessionStorage[user_id]['game_started'] = False
                 res['response']['buttons'] = [
                     {"title": "Помощь",
