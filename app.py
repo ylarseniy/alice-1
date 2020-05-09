@@ -31,10 +31,8 @@ def main():
 
 def handle_dialog(res, req):
     user_id = req['session']['user_id']
-    # если пользователь новый, то просим его представиться.
     if req['session']['new']:
         res['response']['text'] = 'Привет! Я могу переводить русские слова в английские!'
-        # создаем словарь в который в будущем положим имя пользователя
         sessionStorage[user_id] = {}
         return
 
@@ -45,7 +43,7 @@ def handle_dialog(res, req):
         else:
             TRANSLATE_SERVER = "https://translate.yandex.net/api/v1.5/tr.json/translate"
             translate_options = {"key": YA_TRANSLATE_API_KEY,
-                                 "text": req['request']['original_utterance'].lower(),
+                                 "text": word,
                                  "lang": "ru-en"}
             try:
                 result = requests.get(TRANSLATE_SERVER, params=translate_options).json()
@@ -54,7 +52,7 @@ def handle_dialog(res, req):
                 return
             res['response']['text'] = result["text"][0]
     else:
-        res['response']['text'] = 'Не правильный формат ввода, пишите «Переведите (переведи) слово: *слово*»'
+        res['response']['text'] = 'Неправильный формат ввода, пишите «Переведите (переведи) слово: *слово*»'
 
 
 if __name__ == '__main__':
