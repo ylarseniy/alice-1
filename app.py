@@ -58,6 +58,10 @@ def handle_dialog(res, req):
         }
         return
 
+    if req['request']['original_utterance'].lower() == "помощь":
+        res['response']['text'] = 'Какая справка для этой игры? Тут всё очевидно'
+        res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
+        return
     # если пользователь не новый, то попадаем сюда.
     # если поле имени пустое, то это говорит о том,
     # что пользователь еще не представился.
@@ -80,11 +84,6 @@ def handle_dialog(res, req):
             res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
 
     else:
-        print(req['request']['original_utterance'].lower())
-        if req['request']['original_utterance'].lower() == "помощь":
-            res['response']['text'] = 'Какая справка для этой игры? Тут всё очевидно'
-            res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
-            return
         if sessionStorage[user_id]['game_over']:
             res['response']['text'] = "Игра окончена!"
             res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
