@@ -80,6 +80,9 @@ def handle_dialog(res, req):
         if sessionStorage[user_id]['game_over']:
             res['response']['text'] = "Игра окончена!"
             return
+        if req['request']['original_utterance'].lower() == "Помощь":
+            res['response']['text'] = 'Какая справка для этой игры? Тут всё очевидно'
+            return
         if not sessionStorage[user_id]['game_started']:
             if req['request']['original_utterance'].lower() in [
                 'да',
