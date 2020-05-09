@@ -53,13 +53,15 @@ def handle_dialog(res, req):
             'game_over': False,
             'game_started': False,
             'right_city': None,
-            'guessed': [],
             'cities': deepcopy(cities)
         }
         return
 
     if req['request']['original_utterance'].lower() == "помощь":
         res['response']['text'] = 'Какая справка для этой игры? Тут всё очевидно'
+        res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
+        return
+    if req['request']['original_utterance'].lower() == "покажи город на карте":
         res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
         return
     # если пользователь не новый, то попадаем сюда.
@@ -82,7 +84,6 @@ def handle_dialog(res, req):
                           + first_name.title() \
                           + '. Я - Алиса. Отгадаешь город по фото?'
             res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
-
     else:
         if sessionStorage[user_id]['game_over']:
             res['response']['text'] = "Игра окончена!"
@@ -127,14 +128,19 @@ def handle_dialog(res, req):
         else:
             city = get_city(req)
             if city == sessionStorage[user_id]['right_city']:
+
                 if not sessionStorage[user_id]['cities']:
                     res['response']['text'] = 'Угадал! Города с моём списке закончились!'
-                    res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
                     sessionStorage[user_id]['game_over'] = True
                 else:
                     res['response']['text'] = 'Угадал! Хочешь отгадывать дальше?'
-                    res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
                 sessionStorage[user_id]['game_started'] = False
+                res['response']['buttons'] = [
+                    {"title": "Помощь",
+                     "hide": True},
+                    {"title": "Покажи город на карте",
+                     "url": f"https://yandex.ru/maps/?mode=search&text={sessionStorage[user_id]['right_city']}",
+                     "hide": True}]
             else:
                 res['response']['text'] = \
                     'Не угадал. Попробуй еще разок!'
