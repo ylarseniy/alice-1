@@ -4,6 +4,8 @@ import json
 import random
 from copy import deepcopy
 
+from geo import get_geo_info
+
 app = Flask(__name__)
 
 logging.basicConfig(level=logging.INFO)
@@ -53,7 +55,8 @@ def handle_dialog(res, req):
             'game_over': False,
             'game_started': False,
             'right_city': None,
-            'cities': deepcopy(cities)
+            'cities': deepcopy(cities),
+            'country': None
         }
         return
 
@@ -91,6 +94,39 @@ def handle_dialog(res, req):
             res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
             return
         if not sessionStorage[user_id]['game_started']:
+            if sessionStorage[user_id]['country']:
+                if req['request']['original_utterance'].lower() == sessionStorage[user_id]['country']:
+                    if not sessionStorage[user_id]['cities']:
+                        res['response']['text'] = 'Угадал! Города с моём списке закончились!'
+                        res['response']['buttons'] = [
+                            {"title": "Помощь",
+                             "hide": True},
+                            {"title": "Покажи город на карте",
+                             "url": f"https://yandex.ru/maps/?mode=search&text={sessionStorage[user_id]['right_city']}",
+                             "hide": True}]
+                        sessionStorage[user_id]['game_over'] = True
+                    else:
+                        sessionStorage[user_id]['game_started'] = False
+                        res['response']['text'] = 'Правильно! Сыграем ещё?'
+                        res['response']['buttons'] = [
+                            {"title": "Помощь",
+                             "hide": True},
+                            {"title": "Покажи город на карте",
+                             "url": f"https://yandex.ru/maps/?mode=search&text={sessionStorage[user_id]['right_city']}",
+                             "hide": True}]
+
+                    sessionStorage[user_id]['game_started'] = True
+                    sessionStorage[user_id]['country'] = None
+                    return
+                else:
+                    res['response']['text'] = 'Не угадал. Попробуй еще разок!'
+                    res['response']['buttons'] = [
+                        {"title": "Помощь",
+                         "hide": True},
+                        {"title": "Покажи город на карте",
+                         "url": f"https://yandex.ru/maps/?mode=search&text={sessionStorage[user_id]['right_city']}",
+                         "hide": True}]
+                    return
             if req['request']['original_utterance'].lower() in [
                 'да',
                 'отгадаю',
@@ -129,12 +165,8 @@ def handle_dialog(res, req):
         else:
             city = get_city(req)
             if city == sessionStorage[user_id]['right_city']:
-
-                if not sessionStorage[user_id]['cities']:
-                    res['response']['text'] = 'Угадал! Города с моём списке закончились!'
-                    sessionStorage[user_id]['game_over'] = True
-                else:
-                    res['response']['text'] = 'Угадал! Хочешь отгадывать дальше?'
+                res['response']['text'] = 'Правильно! А в какой стране этот город?'
+                sessionStorage[user_id]['country'] = get_geo_info(city, "country")
                 sessionStorage[user_id]['game_started'] = False
                 res['response']['buttons'] = [
                     {"title": "Помощь",
