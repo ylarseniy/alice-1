@@ -97,7 +97,8 @@ def handle_dialog(res, req):
             if sessionStorage[user_id]['country']:
                 if req['request']['original_utterance'].lower() == sessionStorage[user_id]['country']:
                     if not sessionStorage[user_id]['cities']:
-                        res['response']['text'] = 'Угадал! Города с моём списке закончились!'
+                        res['response']['text'] = f'Угадал, {sessionStorage[user_id]["first_name"]}' \
+                                                  f'! Города с моём списке закончились!'
                         res['response']['buttons'] = [
                             {"title": "Помощь",
                              "hide": True},
@@ -107,7 +108,7 @@ def handle_dialog(res, req):
                         sessionStorage[user_id]['game_over'] = True
                     else:
                         sessionStorage[user_id]['game_started'] = False
-                        res['response']['text'] = 'Правильно! Сыграем ещё?'
+                        res['response']['text'] = f'Правильно, {sessionStorage[user_id]["first_name"]}! Сыграем ещё?'
                         res['response']['buttons'] = [
                             {"title": "Помощь",
                              "hide": True},
@@ -119,7 +120,7 @@ def handle_dialog(res, req):
                     sessionStorage[user_id]['country'] = None
                     return
                 else:
-                    res['response']['text'] = 'Не угадал. Попробуй еще разок!'
+                    res['response']['text'] = f'Не угадал, {sessionStorage[user_id]["first_name"]}. Попробуй еще разок!'
                     res['response']['buttons'] = [
                         {"title": "Помощь",
                          "hide": True},
@@ -145,7 +146,7 @@ def handle_dialog(res, req):
                 res['response']['card']['type'] = 'BigImage'
                 res['response']['card']['title'] = ''
                 res['response']['card']['image_id'] = image_id
-                res['response']['text'] = 'Что это за город?'
+                res['response']['text'] = f'{sessionStorage[user_id]["first_name"]}, что это за город?'
                 res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
                 sessionStorage[user_id]['game_started'] = True
             elif req['request']['original_utterance'].lower() in [
@@ -165,7 +166,8 @@ def handle_dialog(res, req):
         else:
             city = get_city(req)
             if city == sessionStorage[user_id]['right_city']:
-                res['response']['text'] = 'Правильно! А в какой стране этот город?'
+                res['response']['text'] = f'Правильно, {sessionStorage[user_id]["first_name"]}!' \
+                                          f' А в какой стране этот город?'
                 sessionStorage[user_id]['country'] = get_geo_info(city, "country").lower()
                 print(sessionStorage[user_id]['country'])
                 sessionStorage[user_id]['game_started'] = False
@@ -177,7 +179,7 @@ def handle_dialog(res, req):
                      "hide": True}]
             else:
                 res['response']['text'] = \
-                    'Не угадал. Попробуй еще разок!'
+                    f'Не угадал, {sessionStorage[user_id]["first_name"]}. Попробуй еще разок!'
                 res['response']['buttons'] = [{"title": "Помощь", "hide": True}]
 
 
