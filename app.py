@@ -46,6 +46,8 @@ def handle_dialog(res, req):
     # если пользователь новый, то просим его представиться.
     if req['session']['new']:
         res['response']['text'] = 'Привет! Назови свое имя!'
+        res['response']['buttons'] = [{"title": "Помощь", "payload": {}}
+    ],
         # создаем словарь в который в будущем положим имя пользователя
         sessionStorage[user_id] = {
             'first_name': None,
