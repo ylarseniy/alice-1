@@ -95,11 +95,6 @@ def handle_dialog(res, req):
             return
         if not sessionStorage[user_id]['game_started']:
             if sessionStorage[user_id]['country']:
-                print(req['request']['original_utterance'].lower(), sessionStorage[user_id]['country'])
-                print(req['request']['original_utterance'].lower(), sessionStorage[user_id]['country'])
-                print(req['request']['original_utterance'].lower(), sessionStorage[user_id]['country'])
-                print(req['request']['original_utterance'].lower(), sessionStorage[user_id]['country'])
-                print(req['request']['original_utterance'].lower(), sessionStorage[user_id]['country'])
                 if req['request']['original_utterance'].lower() == sessionStorage[user_id]['country']:
                     if not sessionStorage[user_id]['cities']:
                         res['response']['text'] = 'Угадал! Города с моём списке закончились!'
@@ -171,7 +166,7 @@ def handle_dialog(res, req):
             city = get_city(req)
             if city == sessionStorage[user_id]['right_city']:
                 res['response']['text'] = 'Правильно! А в какой стране этот город?'
-                sessionStorage[user_id]['country'] = get_geo_info(city, "country")
+                sessionStorage[user_id]['country'] = get_geo_info(city, "country").lower()
                 print(sessionStorage[user_id]['country'])
                 sessionStorage[user_id]['game_started'] = False
                 res['response']['buttons'] = [
