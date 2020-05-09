@@ -115,7 +115,7 @@ def handle_dialog(res, req):
                              "url": f"https://yandex.ru/maps/?mode=search&text={sessionStorage[user_id]['right_city']}",
                              "hide": True}]
 
-                    sessionStorage[user_id]['game_started'] = True
+                    sessionStorage[user_id]['game_started'] = False
                     sessionStorage[user_id]['country'] = None
                     return
                 else:
